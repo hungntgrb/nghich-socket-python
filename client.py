@@ -1,27 +1,32 @@
 import socket
 import sys
 
-HOST = 'localhost'
+HOST = '192.168.1.24'
 PORT = 5656
 ADDR = (HOST, PORT)
 ENCODING = 'utf-8'
+HEADER = 20
+DISCONNECT_MSG = '!DISCONNECT'
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-print(f'Connecting to {HOST!r} port {PORT!r}')
+
 sock.connect(ADDR)
 
 
-try:
-    msg = input("Your name > ").encode(ENCODING)
+def send(msg):
+    header = f"{len(msg):<{HEADER}}"
+    msg = (header + msg).encode(ENCODING)
     sock.sendall(msg)
+    print('-- Sent!')
 
-    amount_received = 0
-    amount_expected = len(msg)
-    while amount_received < amount_expected:
-        data = sock.recv(8)
-        amount_received += len(data)
-        print(f'Received {data!r}')
 
-finally:
-    print('Closing connection!')
-    sock.close()
+while True:
+    message = input("Your msg > ")
+
+    send(message)
+
+    if message == DISCONNECT_MSG:
+        sock.close()
+        break
+
+print('End Client!')
